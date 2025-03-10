@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+LINE通知設定
+{% endblock %}
+
+{% block content %}
+<!-- 戻るボタンの追加 -->
+<button class="back-btn btn btn-secondary" onclick="window.history.back();">戻る</button>
+<p>通知ONにした商品の価格が変動した際にLINE通知が送信されます（※最大5件）。</p>
+<a href="{{ url_for('api.register_line_notification') }}">LINE通知登録</a>
+<div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">商品名</th>
+                <th scope="col">モデル</th>
+                <th scope="col">LINE通知ON/OFF</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <th scope="row"><a href="{{product.url}}">{{product.name}}</a></th>
+                <td>{{product.model}}</td>
+                <td>
+                    <!-- LINE通知ON/OFFの取得・変更 -->
+                    <label class="toggleButton">
+                      <input type="checkbox" id="toggle-{{ product.order_code }}"
+                             class="toggleButton__checkbox" />
+                    </label>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button class="edit-btn btn btn-success" style="display: none;">OK</button>
+</div>
+<!-- 外部JavaScriptファイルを読み込む -->
+<script src="{{ url_for('static', filename='js/api_line_notification_setting.js') }}"></script>
+{% endblock %}

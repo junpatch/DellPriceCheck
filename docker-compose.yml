@@ -1,0 +1,11 @@
+services:
+  api:
+    container_name: flask-api
+    build:
+      context: ./api
+      target: base
+    ports:
+      - 5000:5000
+    tty: true
+    volumes:
+      - ./api:/workspace:cached

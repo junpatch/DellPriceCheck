@@ -1,0 +1,14 @@
+{
+    "name": "api-container",
+    "service": "api",
+    "workspaceFolder": "/workspace",
+    "dockerComposeFile": "../../docker-compose.yml",
+    "customizations": {
+        "vscode":{
+            "extensions":[
+                "donjayamanne.python-extension-pack",
+                "ms-python.debugpy"
+            ]
+        }
+    }
+}

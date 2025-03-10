@@ -1,0 +1,6 @@
+flask
+flask_sqlalchemy
+datetime
+dotenv
+psycopg2
+flask_debugtoolbar

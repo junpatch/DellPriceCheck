@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+価格チェックアプリ
+{% endblock %}
+
+{% block content %}
+<header class="bg-primary text-white text-center py-5">
+    <h1>価格チェックサービスへようこそ！</h1>
+    <p class="lead">ウェブ上の商品価格を簡単にチェックし、通知します。</p>
+</header>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <h2>概要</h2>
+            <p>このアプリでは、商品の価格を定期的に確認し、価格が変動した場合にLIME通知を送信します。</p>
+        </div>
+        <div class="col-md-6 mb-4">
+            <h2>リンク</h2>
+            <p>以下のアプリを利用して、価格チェックをお試しください。</p>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="{{ url_for('api.index') }}" class="btn btn-link">DELL ノートパソコン価格チェック</a>
+                </li>
+                <!-- 他のリンクが必要な場合はここに<li>を追加 -->
+            </ul>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

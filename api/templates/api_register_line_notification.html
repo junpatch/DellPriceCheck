@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+LINE通知登録
+{% endblock %}
+
+{% block content %}
+<!-- 戻るボタンをスタイリッシュに -->
+<div style="margin-bottom: 20px;">
+  <button
+          class="back-btn btn btn-secondary"
+          onclick="window.history.back();"
+          style="display: flex; align-items: center; gap: 6px; padding: 10px 16px; font-size: 14px; font-weight: bold; border-radius: 8px;">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    </svg>
+    戻る
+  </button>
+</div>
+
+<!-- 本文とQRコードのスタイル -->
+<div style="text-align: center;">
+  <h2 style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 16px;">LINE通知登録</h2>
+  <p style="font-size: 16px; color: #555; line-height: 1.6;">LINE通知の登録をするには下記のQRコードより友達登録をしてください。</p>
+  <div style="margin-top: 20px;">
+    <img
+      src="https://qr-official.line.me/gs/M_195noncp_GW.png?oat_content=qr"
+      alt="LINE友達登録QRコード"
+      style="width: 300px; height: auto; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border: 2px solid #ddd; border-radius: 8px;">
+  </div>
+</div>
+{% endblock %}
