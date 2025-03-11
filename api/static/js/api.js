@@ -1,6 +1,9 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const productNameSelect = document.getElementById("productNameSelect");
   const productModelSelect = document.getElementById("productModelSelect");
+  const BASE_URL = window.location.hostname === "localhost"
+    ? ""  // ローカル環境ではそのまま相対パス
+    : "/dev";  // Lambda の場合は /dev 付き
 
   // 共通の option 要素作成関数
   function createOptionElement(value, textContent) {
@@ -21,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!selectedName) return;
 
     try {
-      const response = await fetch(`/api/get_model/${encodeURIComponent(selectedName)}`);
+      const response = await fetch(`${BASE_URL}/api/get_model/${encodeURIComponent(selectedName)}`);
       const modelList = await response.json();
 
       if (modelList.length > 0) {
@@ -58,12 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const model = productModelSelect.value;
 
         try {
-            const response = await fetch("/api/get_price_trend", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, model }),
-            });
-
+            const response = await fetch(`${BASE_URL}/api/get_price_trend/${encodeURIComponent(name)}/${encodeURIComponent(model)}`);
             const data = await response.json();
 
             if (data.prices?.length > 0) {
@@ -124,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         try {
             // APIから価格データを取得
-            const response = await fetch("/api/check_price");
+            const response = await fetch(`${BASE_URL}/api/check_price`);
             if (!response.ok) {
                 throw new Error("データの取得に失敗しました");
               }
@@ -147,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         try {
             // APIから価格データを取得
-            const response = await fetch("/api/notification_test");
+            const response = await fetch(`${BASE_URL}/api/notification_test`);
             if (!response.ok) {
                 throw new Error("データの取得に失敗しました");
               }

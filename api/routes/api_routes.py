@@ -4,7 +4,7 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, request, render_template, Response
 
-from ..model.models import Products, PriceHistory, db
+from model.models import Products, PriceHistory, db
 
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -52,7 +52,7 @@ def index():
         #       スペースを詰めて重複削除が必要。その後、モデル名を選択するときにさらなる工夫が必要・・・
         product_names_list = sorted(set([product.name for product in products]))
     except Exception as e:
-        from ..app import app
+        from app import app
         app.logger.info(f"DBからのデータ取得エラー: {e}")
         product_names_list = []
     return render_template("api.html", product_names_list=product_names_list)
@@ -71,13 +71,9 @@ def register_line_notification():
     return render_template("api_register_line_notification.html")
 
 
-@bp.route("/get_price_trend", methods=["GET", "POST"])
-def price_trends() -> Response:
+@bp.route("/get_price_trend/<string:name>/<string:model>", methods=["GET"])
+def price_trends(name, model) -> Response:
     """価格推移データを取得"""
-    data = request.get_json()
-    name = data.get("name")
-    model = data.get("model")
-
     order_code = fetch_order_code(name, model)
     if not order_code:
         return jsonify({"error": "商品の注文コードが見つかりません"}), 404
@@ -90,15 +86,16 @@ def price_trends() -> Response:
     return jsonify({"prices": price_data, "url": url})
 
 
-@bp.route("/get_notification_setting", methods=["POST"])
+@bp.route("/get_notification_setting", methods=["GET"])
 def notification_setting() -> Response:
     """通知設定を取得"""
-    data = request.get_json()
-    order_code = data.get("order_code")
-    product = fetch_product_by_order_code(order_code)
-    if product:
-        return jsonify({"success": True, "toggleValue": product.is_line_notification})
-    return jsonify({"success": False, "toggleValue": None})
+    products = db.session.query(Products.order_code, Products.is_line_notification).all()
+    toggle_values = {}
+    if products:
+        for product in products:
+            toggle_values[product.order_code] = product.is_line_notification
+        return jsonify({"success": True, "toggleValues": toggle_values})
+    return jsonify({"success": False, "toggleValues": None})
 
 
 @bp.route("/update_notification_setting", methods=["POST"])
