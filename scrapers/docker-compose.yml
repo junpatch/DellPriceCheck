@@ -1,0 +1,15 @@
+services:
+  scrapy_try:
+    build: .
+    container_name: scrapy_container
+    volumes:
+      - .:/app  # バインドマウント（ホストのフォルダをコンテナ内に同期）
+    working_dir: /app
+
+    # playwrightセキュリティ設定(https://playwright.dev/python/docs/docker)
+    # security_opt:
+    #   - seccomp:/seccomp_profile.json
+    # ipc: host
+    # user: pwuser
+
+    tty: true  # 対話的なコンテナ操作を可能にする

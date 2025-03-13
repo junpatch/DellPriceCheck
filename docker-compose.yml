@@ -14,3 +14,16 @@ services:
     environment:
       - AWS_DEFAULT_REGION=ap-northeast-1
       - AWS_DEFAULT_OUTPUT=json
+
+  scrapers:
+    container_name: scrapy-api
+    build:
+      context: ./scrapers
+      target: base
+    tty: true
+    volumes:
+    - ./scrapers:/scrapers:cached
+    env_file:
+      - ./scrapers/.env
+    # environment: 
+    # entrypoint: ["scrapy"]

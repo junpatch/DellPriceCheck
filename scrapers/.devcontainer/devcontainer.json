@@ -1,0 +1,14 @@
+{
+    "name": "scrapy_try",
+    "service": "scrapy_try",
+    "workspaceFolder": "/app",
+    "dockerComposeFile": "../docker-compose.yml",
+    "customizations": {
+        "vscode":{
+            "extensions":[
+                "donjayamanne.python-extension-pack",
+                "ms-python.debugpy"
+            ]
+        }
+    }
+}
