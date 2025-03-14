@@ -1,5 +1,6 @@
 import os
 
+from flask import Flask
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -21,14 +22,26 @@ def execute_spider(spider_name=DEFAULT_SPIDER):  # より直感的な関数名�
     # current_directory = os.path.abspath(os.path.dirname(__file__))  # os.chdirの補助変数を導入
     # os.chdir(current_directory)
 
-    try:
-        # スパイダーを初期化して実行
-        process = CrawlerProcess(get_project_settings())
-        process.crawl(spider_name)
-        process.start()
-    except Exception as e:
-        print(f"エラー: {e}")    
+    # try:
+    #     # スパイダーを初期化して実行
+    #     process = CrawlerProcess(get_project_settings())
+    #     process.crawl(spider_name)
+    #     process.start()
+    # except Exception as e:
+    #     print(f"エラー: {e}")
+    
+    import subprocess
+    result = subprocess.run(["scrapy", "crawl", "laptop"])
+
+    return "spider end"
         
-        
+app = Flask(__name__)
+
+@app.route("/", methods=["GET"])
+def run_spider():
+    result = execute_spider()
+    
+    return result
+
 if __name__ == "__main__":
-    execute_spider()
+    app.run()

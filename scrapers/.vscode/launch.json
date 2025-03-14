@@ -4,11 +4,15 @@
     // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python デバッガー: モジュール",
             "type": "debugpy",
             "request": "launch",
-            "module": "run"
+            "module": "app",  // 実行スクリプトを指定
+            // "python": "../.venv/bin/python",  // 仮想環境を指定（Windowsなら .venv\\Scripts\\python.exe）
+            // "console": "integratedTerminal",
+            // "justMyCode": true
         }
     ]
 }

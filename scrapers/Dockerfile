@@ -22,11 +22,14 @@ RUN apt-get update && apt-get install -y \
 # `pwuser` を追加（スクレイピング用のセキュリティ対策）
 # RUN adduser --disabled-password --gecos "" pwuser
 
+RUN python -m venv ./venv \
+    && ./venv/bin/pip install --upgrade pip
+
 # Scrapyとその他必要なライブラリをインストール
 COPY requirements.txt .
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt \
-    && playwright install --with-deps
+RUN ./venv/bin/pip install --no-cache-dir -r requirements.txt
+    # && source ./venv/bin/activate 
+    # && playwright install --with-deps
 
 # アプリケーションのソースコードをコンテナにコピー
 # COPY . .
@@ -36,5 +39,8 @@ RUN pip install --upgrade pip \
 
 ENV DOCKER_ENV=true
 
+# コンテナのポート5000を公開
+EXPOSE 5001
+
 # デフォルトのコマンドを指定
-CMD ["/bin/bash"]
+CMD ["/bin/bash", "-c", "source /scrapers/venv/bin/activate && playwright install --with-deps && bash"]
