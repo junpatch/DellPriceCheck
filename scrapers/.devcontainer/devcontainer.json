@@ -1,8 +1,8 @@
 {
-    "name": "scrapy_try",
-    "service": "scrapy_try",
-    "workspaceFolder": "/app",
-    "dockerComposeFile": "../docker-compose.yml",
+    "name": "scrapers",
+    "service": "scrapers",
+    "workspaceFolder": "/scrapers",
+    "dockerComposeFile": "../../docker-compose.yml",
     "customizations": {
         "vscode":{
             "extensions":[

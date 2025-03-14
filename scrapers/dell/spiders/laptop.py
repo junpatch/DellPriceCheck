@@ -15,9 +15,9 @@ class LaptopSpider(scrapy.Spider):
             url=self.start_urls[0], 
             meta={
                 "playwright": True,
-                "playwright_page_methods": [
-                    PageMethod("screenshot", path="example.png", full_page=True),
-                ],
+                # "playwright_page_methods": [
+                #     PageMethod("screenshot", path="example.png", full_page=True),
+                # ],
                 "current_page": 1
                 }
             )
@@ -41,9 +41,9 @@ class LaptopSpider(scrapy.Spider):
             url=f"{self.start_urls[0]}?page={next_page}",
             meta={
                 "playwright": True,
-                "playwright_page_methods": [
-                    PageMethod("screenshot", path="example.png", full_page=True),
-                ],
+                # "playwright_page_methods": [
+                #     PageMethod("screenshot", path="example.png", full_page=True),
+                # ],
                 "current_page": next_page,
                 "total_pages": total_pages,
                 "callback": self.parse

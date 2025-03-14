@@ -2,7 +2,7 @@
 FROM python:3.11-slim AS base
 
 # 作業ディレクトリを設定
-WORKDIR /app
+WORKDIR /scrapers
 
 # 必要なパッケージをインストールして、python仮想環境をセットアップ
 RUN apt-get update && apt-get install -y \
