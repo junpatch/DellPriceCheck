@@ -1,3 +1,9 @@
 import sys
+
+from app import execute_spider
+
+
 def handler(event, context):
-    return 'Hello from AWS Lambda using Python' + sys.version + '!'
+    result = execute_spider()
+    
+    return result

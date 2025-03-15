@@ -1,12 +1,12 @@
 {
     "name": "scrapers",
     "service": "scrapers",
-    "workspaceFolder": "/scrapers",
+    "workspaceFolder": "/var/task",
     "dockerComposeFile": "../../docker-compose.yml",
     "customizations": {
         "vscode":{
             "settings": {
-                "python.defaultInterpreterPath": "/scrapers/venv/bin/python"
+                "python.defaultInterpreterPath": "/var/task/venv/bin/python"
             },
             "extensions":[
                 "donjayamanne.python-extension-pack",
