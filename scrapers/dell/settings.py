@@ -7,6 +7,9 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+
+
 BOT_NAME = "dell"
 
 SPIDER_MODULES = ["dell.spiders"]
@@ -97,3 +100,12 @@ DOWNLOAD_HANDLERS = {
     "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
 }
 PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 150000  # 150秒
+
+# ChromiumをLambda対応にする
+PLAYWRIGHT_LAUNCH_OPTIONS = {
+    "headless": True,
+    "executable_path": "/playwright/chromium_headless_shell-1155/chrome-linux/headless_shell",
+    "args": ["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"]
+    # "debug": "pw:api"
+}
+
