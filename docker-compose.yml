@@ -19,7 +19,7 @@ services:
     container_name: scrapy-api
     build:
       context: ./scrapers
-      target: builder
+      target: final
     tty: true
     volumes:
       - ./scrapers:/var/task:cached

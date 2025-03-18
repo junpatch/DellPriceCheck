@@ -23,16 +23,16 @@ def execute_spider(spider_name=DEFAULT_SPIDER):  # より直感的な関数名�
 
     # 成功・失敗に応じたレスポンスを作成
     if result.returncode == 0:
-        return jsonify({"status": "success", "output": result.stderr}) # 成功してもstderrに書き込まれる
+        return jsonify({"status": "success", "output": result.stdout, "error": result.stderr}) # 成功してもstderrに書き込まれる
     else:
-        return jsonify({"status": "error", "error": result.stderr}), 500
+        return jsonify({"status": "error", "output": result.stdout, "error": result.stderr}), 500
         
 app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def hello_world():
     
-    return "Hello World!!3"
+    return "Hello World!!! Hit '/run_spider' to run the spider"
 
 @app.route("/run_spider", methods=["GET"])
 def run_spider():
@@ -41,4 +41,4 @@ def run_spider():
     return result
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)

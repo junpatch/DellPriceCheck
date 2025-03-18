@@ -4,9 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const SERVER_ERROR_MSG = "サーバーエラーが発生しました: ";
     const NETWORK_ERROR_MSG = "ネットワークエラー: ";
     const MAX_CHECKED_LIMIT = 5;
-    const BASE_URL = window.location.hostname === "localhost"
-        ? ""  // ローカル環境ではそのまま相対パス
-        : "/dev";  // Lambda の場合は /dev 付き
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname.startsWith("127.");
+    const BASE_URL = isLocal ? "" : "/dev";
 
     // ① ロード時の通知設定取得と反映
     const fetchAndSetALLToggleValues = async() => {

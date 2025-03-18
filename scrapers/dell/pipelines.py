@@ -33,6 +33,9 @@ DEFAULT_PRICE = 0  # 既存価格がない場合のデフォルト値
 
 
 class SQLAlchemyPipeline:
+    def __init__(self):
+        self.updated_count = 0
+
     def open_spider(self, spider) -> None:
         """データベース接続を初期化し、テーブルを作成する。"""
         self.engine = create_engine(SQLALCHEMY_DATABASE_URI)
@@ -59,6 +62,7 @@ class SQLAlchemyPipeline:
     def close_spider(self, spider) -> None:
         """データベースセッションと接続を終了する。"""
         self.session.close()
+        print(f"{self.updated_count}個のデータが更新されました")
 
     def _save_product_and_history(self, item: dict, current_time: datetime, spider) -> None:
         """データベースに商品データと価格履歴を保存する。"""
@@ -72,6 +76,7 @@ class SQLAlchemyPipeline:
             self.session.commit()
 
             spider.logger.info(f"DB登録成功: {product.order_code}")
+            self.updated_count += 1
         except Exception as e:
             self.session.rollback()
             spider.logger.error(f"DB登録失敗: {item.get('order_code')}): {e}", exc_info=True)

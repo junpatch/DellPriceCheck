@@ -82,6 +82,6 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 # ENTRYPOINT [ "/bin/bash", "./entry.sh" ]
 # CMD [ "lambda_function.handler" ]
 
-EXPOSE 5000
+EXPOSE 5001
 # CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
 CMD ["python", "-m", "app"]

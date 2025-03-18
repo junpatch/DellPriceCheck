@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+import requests
 
 from flask import Blueprint, jsonify, request, render_template, Response
+from zappa.asynchronous import task
 
 from model.models import Products, PriceHistory, db
 
@@ -121,21 +123,42 @@ def get_subcategories(name) -> Response:
 @bp.route("/check_price", methods=["GET"])
 def price_check() -> Response:
     """現在の価格を取得"""
-    # TODO: scrapyへのapi設定
-    result = {"result": 0}
-    return jsonify(result)
+    """非同期でスクレイピングを実行し、即レスポンスを返す"""
+    run_spider_task()
+    return jsonify({"message": "Scraping started, check back later!"})
 
 
 @bp.route("/notification_test", methods=["GET"])
 def notification_test() -> Response:
-    # すべての価格を0円に変更
-    products = Products.query.all()
-    for product in products:
-        product.price = 0
+    """すべての価格を0円に変更後、最新価格を取得"""
+    
+    try:
+        # すべての価格を0円に変更
+        products = Products.query.all()
+        for product in products:
+            product.price = 0
 
-    db.session.commit()  # データベースに変更を反映
+        db.session.commit()  # データベースに変更を反映
 
-    # 現在の価格を取得してLINE通知
-    # TODO: scrapyへのapi設定
-    result = {"result": 0}
+        # 現在の価格を取得
+        return price_check()
+
+    except Exception as e:
+        db.session.rollback()  # 失敗時にロールバック
+        return jsonify({"result": 0, "error": str(e)})
+
+@task
+def run_spider_task():
+    """非同期でスクレイピングを実行する"""
+    api_url = "http://fargate-demo-alb-1377125418.ap-northeast-1.elb.amazonaws.com/run_spider"
+    try:
+        response = requests.get(api_url, timeout=300)
+        response.raise_for_status()  # エラー時に例外を発生させる
+
+        data = response.json()
+        result = {"result": "updated", "spider_output": data}
+
+    except requests.exceptions.RequestException as e:
+        result = {"result": "error", "error": str(e)}
+
     return jsonify(result)

@@ -1,9 +1,8 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const productNameSelect = document.getElementById("productNameSelect");
   const productModelSelect = document.getElementById("productModelSelect");
-  const BASE_URL = window.location.hostname === "localhost"
-    ? ""  // ローカル環境ではそのまま相対パス
-    : "/dev";  // Lambda の場合は /dev 付き
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname.startsWith("127.");
+  const BASE_URL = isLocal ? "" : "/dev";
 
   // 共通の option 要素作成関数
   function createOptionElement(value, textContent) {
@@ -124,13 +123,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             // APIから価格データを取得
             const response = await fetch(`${BASE_URL}/api/check_price`);
             if (!response.ok) {
-                throw new Error("データの取得に失敗しました");
-              }
+              throw new Error(`HTTPエラー: ${response.status} - ${response.statusText}`);
+          }
             const data = await response.json();
 
-            priceOutput.innerHTML = `<p>response: ${response.ok}</p>`;
+            // 成功時のポップアップ表示
+            if (data.status === "success") {
+              // ここでポップアップを表示
+              alert(`成功: ${data.output}`);
+            } else {
+                alert(`スクレイピング失敗\nエラー: ${data.error}`);
+            } 
+
+            priceOutput.innerHTML = ``;
         } catch (error) {
-            priceOutput.innerHTML = `<p class="error">エラー: ${error.message}</p>`;
+            priceOutput.innerHTML = `<p class="error">ネットワークエラーまたはAPIエラー: ${error.message}</p>`;
+            console.error("ネットワークエラーまたはAPIエラー:", error.message);
         }
     });
 
@@ -147,13 +155,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             // APIから価格データを取得
             const response = await fetch(`${BASE_URL}/api/notification_test`);
             if (!response.ok) {
-                throw new Error("データの取得に失敗しました");
-              }
+              throw new Error(`HTTPエラー: ${response.status} - ${response.statusText}`);
+          }
             const data = await response.json();
 
-            notificationOutput.innerHTML = `<p>response: ${response.ok}</p>`;
+            // 成功時のポップアップ表示
+            if (data.status === "success") {
+              // ここでポップアップを表示
+              alert(`成功: ${data.output}`);
+            } else {
+                alert(`スクレイピング失敗\nエラー: ${data.error}`);
+            } 
+            
+            notificationOutput.innerHTML = ``;
         } catch (error) {
-            notificationOutput.innerHTML = `<p class="error">エラー: ${error.message}</p>`;
+          notificationOutput.innerHTML = `<p class="error">ネットワークエラーまたはAPIエラー: ${error.message}</p>`;
+          console.error("ネットワークエラーまたはAPIエラー:", error.message);
         }
     });
 });
