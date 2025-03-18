@@ -79,5 +79,9 @@ COPY --from=builder /usr/include/ /usr/include/
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 
-ENTRYPOINT [ "/bin/bash", "./entry.sh" ]
-CMD [ "lambda_function.handler" ]
+# ENTRYPOINT [ "/bin/bash", "./entry.sh" ]
+# CMD [ "lambda_function.handler" ]
+
+EXPOSE 5000
+# CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["python", "-m", "app"]

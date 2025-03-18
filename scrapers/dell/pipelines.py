@@ -28,7 +28,7 @@ else:
     PASSWORD = os.environ.get('POSTGRE_PASSWORD')
     HOST_NAME = os.environ.get('POSTGRE_HOST_NAME')
     DB_NAME = os.environ.get('POSTGRE_DB_NAME')
-    SQLALCHEMY_DATABASE_URI = f"postgresql://{USER_NAME}:{PASSWORD}@{HOST_NAME}.oregon-postgres.render.com/{DB_NAME}"
+    SQLALCHEMY_DATABASE_URI = f"postgresql://{USER_NAME}:{PASSWORD}@{HOST_NAME}.oregon-postgres.render.com/{DB_NAME}?sslmode=require"
 DEFAULT_PRICE = 0  # 既存価格がない場合のデフォルト値
 
 

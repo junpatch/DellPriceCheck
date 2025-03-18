@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, jsonify
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -18,30 +18,27 @@ def execute_spider(spider_name=DEFAULT_SPIDER):  # より直感的な関数名�
     :param spider_name: Name of the spider to execute. Defaults to 'laptop'.
     :type spider_name: str
     """
-    # スクリプトの現在の作業ディレクトリを動的に取得して設定
-    # current_directory = os.path.abspath(os.path.dirname(__file__))  # os.chdirの補助変数を導入
-    # os.chdir(current_directory)
-
-    # try:
-    #     # スパイダーを初期化して実行
-    #     process = CrawlerProcess(get_project_settings())
-    #     process.crawl(spider_name)
-    #     process.start()
-    # except Exception as e:
-    #     print(f"エラー: {e}")
-    
     import subprocess
-    result = subprocess.run(["scrapy", "crawl", "laptop"])
+    result = subprocess.run(["scrapy", "crawl", spider_name], capture_output=True, text=True)
 
-    return "spider end"
+    # 成功・失敗に応じたレスポンスを作成
+    if result.returncode == 0:
+        return jsonify({"status": "success", "output": result.stderr}) # 成功してもstderrに書き込まれる
+    else:
+        return jsonify({"status": "error", "error": result.stderr}), 500
         
 app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
+def hello_world():
+    
+    return "Hello World!!3"
+
+@app.route("/run_spider", methods=["GET"])
 def run_spider():
     result = execute_spider()
     
     return result
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
