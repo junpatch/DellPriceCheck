@@ -1,3 +1,4 @@
+import json
 import os
 
 from flask import Flask, jsonify
@@ -23,22 +24,24 @@ def execute_spider(spider_name=DEFAULT_SPIDER):  # より直感的な関数名�
 
     # 成功・失敗に応じたレスポンスを作成
     if result.returncode == 0:
-        return jsonify({"status": "success", "output": result.stdout, "error": result.stderr}) # printの出力がstdoutに書かれる
+        # return jsonify({"status": "success", "output": result.stdout, "error": result.stderr}) # printの出力がstdoutに書かれる
+        return json.dumps({"status": "success", "output": result.stdout, "error": result.stderr}) # printの出力がstdoutに書かれる
     else:
-        return jsonify({"status": "error", "output": result.stdout, "error": result.stderr}), 500
+        # return jsonify({"status": "error", "output": result.stdout, "error": result.stderr}), 500
+        return json.dumps({"status": "error", "output": result.stdout, "error": result.stderr}), 500
         
-app = Flask(__name__)
+# app = Flask(__name__)
 
-@app.route("/", methods=["GET"])
-def hello_world():
+# @app.route("/", methods=["GET"])
+# def hello_world():
     
-    return "Hello World!!! Hit '/run_spider' to run the spider"
+#     return "Hello World!!! Hit '/run_spider' to run the spider"
 
-@app.route("/run_spider", methods=["GET"])
-def run_spider():
-    result = execute_spider()
+# @app.route("/run_spider", methods=["GET"])
+# def run_spider():
+#     result = execute_spider()
     
-    return result
+#     return result
 
 if __name__ == "__main__":
     # app.run(host='0.0.0.0', port=5000)
