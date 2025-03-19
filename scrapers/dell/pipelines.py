@@ -62,7 +62,7 @@ class SQLAlchemyPipeline:
     def close_spider(self, spider) -> None:
         """データベースセッションと接続を終了する。"""
         self.session.close()
-        print(f"{self.updated_count}個のデータが更新されました")
+        print(self.updated_count, end="")
 
     def _save_product_and_history(self, item: dict, current_time: datetime, spider) -> None:
         """データベースに商品データと価格履歴を保存する。"""

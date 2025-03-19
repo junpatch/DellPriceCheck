@@ -7,6 +7,7 @@ $ curl "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
 
 # ログイン
 aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 054037112861.dkr.ecr.ap-northeast-1.amazonaws.com
+aws ecr get-login-password --region ap-northeast-1 --profile lambda  | docker login --username AWS --password-stdin 054037112861.dkr.ecr.ap-northeast-1.amazonaws.com
 
 # レポジトリの作成（初回のみ）
 aws ecr create-repository --repository-name dell_price_check_scrapers_lambda --region ap-northeast-1 --image-scanning-configuration scanOnPush=true --image-tag-mutability MUTABLE

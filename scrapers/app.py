@@ -23,7 +23,7 @@ def execute_spider(spider_name=DEFAULT_SPIDER):  # より直感的な関数名�
 
     # 成功・失敗に応じたレスポンスを作成
     if result.returncode == 0:
-        return jsonify({"status": "success", "output": result.stdout, "error": result.stderr}) # 成功してもstderrに書き込まれる
+        return jsonify({"status": "success", "output": result.stdout, "error": result.stderr}) # printの出力がstdoutに書かれる
     else:
         return jsonify({"status": "error", "output": result.stdout, "error": result.stderr}), 500
         

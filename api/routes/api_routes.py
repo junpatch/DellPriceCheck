@@ -151,14 +151,27 @@ def notification_test() -> Response:
 def run_spider_task():
     """非同期でスクレイピングを実行する"""
     api_url = "http://fargate-demo-alb-1377125418.ap-northeast-1.elb.amazonaws.com/run_spider"
+    # api_url = "http://scrapers:5000//run_spider"
     try:
         response = requests.get(api_url, timeout=300)
         response.raise_for_status()  # エラー時に例外を発生させる
 
         data = response.json()
-        result = {"result": "updated", "spider_output": data}
+        task_results["latest"] = {"status": "updated", "output": data, "error": None}
 
     except requests.exceptions.RequestException as e:
-        result = {"result": "error", "error": str(e)}
+        task_results["latest"] = {"status": "error", "output": None, "error": f"APIリクエスト失敗: {str(e)}"}
 
-    return jsonify(result)
+    except requests.exceptions.Timeout:
+        task_results["latest"] = {"status": "error", "output": None, "error": "タイムアウトエラー"}
+    
+    # return jsonify(result)
+
+# ✅ 最新のスクレイピング結果を取得するエンドポイント
+@bp.route("/get_scraping_status", methods=["GET"])
+def get_scraping_status():
+    """メモリ内の最新スクレイピング結果を取得"""
+    return jsonify(task_results.get("latest", {"status": "pending"}))
+
+# ✅ 結果を保持するグローバル変数（DBを使わない場合）
+task_results = {}

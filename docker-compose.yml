@@ -20,6 +20,8 @@ services:
     build:
       context: ./scrapers
       target: final
+    ports:
+    - 5001:5000
     tty: true
     volumes:
       - ./scrapers:/var/task:cached
