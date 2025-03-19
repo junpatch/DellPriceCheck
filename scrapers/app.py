@@ -20,15 +20,16 @@ def execute_spider(spider_name=DEFAULT_SPIDER):  # より直感的な関数名�
     :type spider_name: str
     """
     import subprocess
-    result = subprocess.run(["scrapy", "crawl", spider_name], capture_output=True, text=True)
+    # result = subprocess.run(["scrapy", "crawl", spider_name], capture_output=True, text=True)
+    result = subprocess.run(["scrapy", "crawl", spider_name])
 
     # 成功・失敗に応じたレスポンスを作成
     if result.returncode == 0:
         # return jsonify({"status": "success", "output": result.stdout, "error": result.stderr}) # printの出力がstdoutに書かれる
-        return json.dumps({"status": "success", "output": result.stdout, "error": result.stderr}) # printの出力がstdoutに書かれる
+        return json.dumps({"status": "success", "output": "output", "error": "error"}) # printの出力がstdoutに書かれる
     else:
         # return jsonify({"status": "error", "output": result.stdout, "error": result.stderr}), 500
-        return json.dumps({"status": "error", "output": result.stdout, "error": result.stderr}), 500
+        return json.dumps({"status": "error", "output": "output", "error": "error"}), 500
         
 # app = Flask(__name__)
 
