@@ -41,6 +41,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: true
 
       - name: Push the image to Amazon ECR
         env:
@@ -69,6 +71,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: true
 
       - name: Fill in the new image ID in the Amazon ECS task definition for web
         id: render-web-task-def
