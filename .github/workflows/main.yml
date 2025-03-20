@@ -118,9 +118,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build an Image and Run Tests
+      - name: Build an Image
         run: |
-          docker build -it -t temp_scrapers:latest .
+          docker image build -t temp_scrapers:latest .
+
+      - name: Create a Container with "-it"
+        run: |
+          docker container run -it temp_scrapers:latest .
 
       - name: Zappa Deploy
         env:
@@ -129,30 +133,30 @@ jobs:
         run: |
           zappa deploy
 
-  deploy_flask:
-    name: Deploy Flask on Lambda by Zappa
-    runs-on: ubuntu-20.04 
-    needs: [web-test-build-image]
-    defaults:
-      run:
-        working-directory: api
+  # deploy_flask:
+  #   name: Deploy Flask on Lambda by Zappa
+  #   runs-on: ubuntu-20.04 
+  #   needs: [web-test-build-image]
+  #   defaults:
+  #     run:
+  #       working-directory: api
 
-    steps:
-      - uses: actions/checkout@v2
+  #   steps:
+  #     - uses: actions/checkout@v2
   
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11
+  #     - name: Set up Python 3.11
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.11
   
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install zappa flask       
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install zappa flask       
   
-      - name: Zappa Deploy
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          zappa deploy
+  #     - name: Zappa Deploy
+  #       env:
+  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #       run: |
+  #         zappa deploy
