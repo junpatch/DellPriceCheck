@@ -139,4 +139,3 @@ jobs:
         run: |
           docker stop temp_api_container
           docker rm temp_api_container
-          docker image rm temp_scraper

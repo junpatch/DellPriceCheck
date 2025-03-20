@@ -119,6 +119,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data = await requestScraping(url);
   });
 
+  // 通知テスト（いずれ消す）
+  const btnNotificationTest = document.getElementById("notificationTest");
+
+  btnNotificationTest.addEventListener("click", async (event) => {
+    event.preventDefault(); // デフォルト動作を防ぐ（URL遷移しない）
+    const url = `${BASE_URL}/api/notification_test`;
+    const data = await requestScraping(url);
+
+  });
+  
   // ✅ 再利用可能な fetch 関数
   async function requestScraping(url) {
     let data = null;
@@ -190,13 +200,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, checkInterval);
   }
 
-  // 通知テスト（いずれ消す）
-  const btnNotificationTest = document.getElementById("notificationTest");
-
-  btnNotificationTest.addEventListener("click", async (event) => {
-    event.preventDefault(); // デフォルト動作を防ぐ（URL遷移しない）
-    const url = `${BASE_URL}/api/notification_test`;
-    const data = await requestScraping(url);
-
-  });
 });
