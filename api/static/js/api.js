@@ -162,7 +162,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const response = await fetch(`${BASE_URL}/api/get_scraping_status/${taskArn_encoded}`);
         if (!response.ok) {
           clearInterval(interval);
-          throw new Error(`fetchで正しいレスポンスが返ってきません(get_scraping_status): ${response.status} - ${response.statusText}`);
+          const errorBody = await response.text(); // レスポンスボディを取得
+          console.error(`レスポンス異常: ${response.status} - ${response.statusText}`, errorBody);
+          throw new Error(`レスポンス異常: ${response.status} - ${response.statusText}`);
         }
         const result = await response.json();
 
