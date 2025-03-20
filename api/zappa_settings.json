@@ -1,0 +1,24 @@
+{
+    "dev": {
+        "app_function": "app.app",
+        "exclude": [
+            "boto3",
+            "dateutil",
+            "botocore",
+            "s3transfer",
+            "concurrent"
+        ],
+        "profile_name": null,
+        "project_name": "workspace",
+        "runtime": "python3.12",
+        "s3_bucket": "zappa-6fu39k6vy",
+        "cors": true,
+        "timeout_seconds": 300,
+        "environment_variables": {
+            "POSTGRE_USER_NAME": "junya",
+            "POSTGRE_PASSWORD": "xnEIgpjRLWikXhBNgBUzTLY4vJPHbfMy",
+            "POSTGRE_HOST_NAME": "dpg-cv4p9u5ds78s73e1vlug-a",
+            "POSTGRE_DB_NAME": "dell_laptop"
+        }
+    }
+}
