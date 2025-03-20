@@ -115,54 +115,75 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnGetLatest.addEventListener("click", async (event) => {
     event.preventDefault(); // デフォルト動作を防ぐ（URL遷移しない）
-
-    try {
-      // APIから価格データを取得
-      const response = await fetch(`${BASE_URL}/api/check_price`);
-      if (!response.ok) {
-        throw new Error(`APIエラー: ${response.status} - ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      if (data) {
-        alert("スクレイピングを開始しました！");
-        checkScrapingStatus()
-      } else {
-        alert("スクレイピングを開始できませんでした");
-      }
-    } catch (error) {
-      console.error("ネットワークエラーまたはAPIエラー:", error.message);
-      alert(`ネットワークエラーまたはAPIエラー: ${error.message}`);
-    }
+    const url = `${BASE_URL}/api/check_price`;
+    const data = await requestScraping(url);
   });
 
+  // ✅ 再利用可能な fetch 関数
+  async function requestScraping(url) {
+    let data = null;
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`fetchで正しいレスポンスが返ってきません (${url}): ${response.status} - ${response.statusText}`);
+      }
+      data = await response.json();
+    } catch (error) {
+      console.error(`fetchエラー (${url})::`, error.message);
+      alert(`fetchエラー (${url}):: ${error.message}`);
+      return null;  // エラー時は null を返す
+    }
+
+    if (data.taskArn) {
+      alert("スクレイピングを開始しました！");
+      checkScrapingStatus(data.taskArn)
+    } else {
+      console.error(`スクレイピングを開始できませんでした data:${data}, taskArn:${taskArn}`);
+      alert("スクレイピングを開始できませんでした");
+    }
+
+    return data
+
+  }
+
   // ✅ 定期的にスクレイピングの結果を取得する関数
-  async function checkScrapingStatus() {
+  async function checkScrapingStatus(taskArn) {
     const checkInterval = 10000; // 10秒ごとに確認
-    const maxRetries = 31; // 最大 60回 (5分)
+    const maxRetries = 60; // 最大 60回 (10分)
     let attempts = 0;
 
     const interval = setInterval(async () => {
       attempts++;
       try {
         // 🎯 最新のスクレイピング結果を取得
-        const response = await fetch(`${BASE_URL}/api/get_scraping_status`);
+        const taskArn_encoded = encodeURIComponent(taskArn);  // taskArnをURLエンコードする
+        const response = await fetch(`${BASE_URL}/api/get_scraping_status/${taskArn_encoded}`);
+        if (!response.ok) {
+          clearInterval(interval);
+          throw new Error(`fetchで正しいレスポンスが返ってきません(get_scraping_status): ${response.status} - ${response.statusText}`);
+        }
         const result = await response.json();
 
-        if (result.status === "updated") {
+        if (result.status === "STOPPED" && result.stopReason === "Essential container in task exited"){
           clearInterval(interval);
-          alert(`スクレイピング完了！データ更新数: ${result.output?.output || "データなし"}`);
-        } else if (result.status === "error") {
+          alert(`スクレイピング完了！`);
+        } else if (result.status === "STOPPED") {
           clearInterval(interval);
-          alert(`エラー発生: ${result.error}`);
+          alert(`スクレイピング異常終了: ${result.stopReason}`);
         } else if (attempts >= maxRetries) {
           clearInterval(interval);
           alert("タイムアウトしました。");
+        } else if (result.status ==="UNKNOWN") {
+          clearInterval(interval);
+          alert(`AWSタスクが見つかりません。ステータス不明。`)
         }
+
       } catch (error) {
         clearInterval(interval);
-        console.error("APIエラー:", error);
-        alert(`APIエラー: ${error.message}`);
+        console.error("fetchエラー(get_scraping_status):", error);
+        alert(`fetchエラー(get_scraping_status): ${error.message}`);
       }
     }, checkInterval);
   }
@@ -172,24 +193,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   btnNotificationTest.addEventListener("click", async (event) => {
     event.preventDefault(); // デフォルト動作を防ぐ（URL遷移しない）
+    const url = `${BASE_URL}/api/notification_test`;
+    const data = await requestScraping(url);
 
-    try {
-      // APIから価格データを取得
-      const response = await fetch(`${BASE_URL}/api/notification_test`);
-      if (!response.ok) {
-        throw new Error(`APIエラー: ${response.status} - ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      if (data) {
-        alert("スクレイピングを開始しました！");
-        checkScrapingStatus()
-      } else {
-        alert("スクレイピングを開始できませんでした");
-      }
-    } catch (error) {
-      console.error("ネットワークエラーまたはAPIエラー:", error.message);
-      alert(`ネットワークエラーまたはAPIエラー: ${error.message}`);
-    }
   });
 });

@@ -52,7 +52,7 @@ jobs:
           docker image tag temp_scrapers:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-  deploy:
+  deploy_flask:
     name: Deploy
     runs-on: ubuntu-20.04 
     needs: [web-test-build-image]
@@ -106,27 +106,28 @@ jobs:
             --task-definition $TASK_DEF_ARN \
             --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.AWS_SUBNET_ID }}],securityGroups=[${{ secrets.AWS_SECURITY_GROUP_ID }}],assignPublicIp=ENABLED}" \
             --capacity-provider-strategy "[{\"capacityProvider\": \"FARGATE_SPOT\", \"weight\": 1}]"
+
+  deploy_scrapy:
+    name: Deploy
+    runs-on: ubuntu-20.04 
+    needs: [web-test-build-image]
+
+    steps:
+      - uses: actions/checkout@v2
   
-# Web Container Build/Test
-## Get Source
-## Build/Test
-## Docker Image Build
-## Login AWS
-## Push image to ECR
-
-# API Container Build/Test
-## Get Source
-## Build/Test
-## Docker Image Build
-## Login AWS
-## Push image to ECR
-
-# Deploy
-## Get Source
-## Login AWS
-## Edit Task Definition
-## Deploy
-
-
-
-
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+  
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install zappa        
+  
+      - name: Zappa Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          zappa deploy production

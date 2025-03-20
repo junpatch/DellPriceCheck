@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 import requests
 
+import boto3
 from flask import Blueprint, jsonify, request, render_template, Response
 from zappa.asynchronous import task
 
@@ -11,10 +12,15 @@ from model.models import Products, PriceHistory, db
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
+ecs_client = boto3.client("ecs", region_name="ap-northeast-1") 
+
 # 定数定義
 NOTIFICATION_UPDATED_MSG = "通知設定を更新しました order_code: {}"
 PRODUCT_NOT_FOUND_MSG = "商品が見つかりません order_code: {}"
-
+CLUSTER_NAME = "fargate-demo-cluster"
+TASK_FAMILY = "fargate-demo-task-definition_git"
+SUBNETS = ["subnet-036e9c273c248c659", "subnet-022e1a8dee3ffabb0", "subnet-050ec254319674193", "subnet-06fa6266584317e5b"]
+SECURITY_GROUPS =["sg-0f985e8b85e007092"]
 
 # ヘルパー関数
 def fetch_product_by_order_code(order_code: str) -> Products | None:
@@ -123,11 +129,58 @@ def get_subcategories(name) -> Response:
 @bp.route("/check_price", methods=["GET"])
 def price_check() -> Response:
     """現在の価格を取得"""
-    """非同期でスクレイピングを実行し、即レスポンスを返す"""
-    run_spider_task()
-    return jsonify({"message": "Scraping started, check back later!"})
+    
+    response = ecs_client.run_task(
+        cluster=CLUSTER_NAME,
+        taskDefinition=get_latest_task_definition(TASK_FAMILY),
+        capacityProviderStrategy=[
+            {"capacityProvider": "FARGATE_SPOT", "weight": 1}
+        ],
+        networkConfiguration={
+            "awsvpcConfiguration": {
+                "subnets": SUBNETS,
+                "securityGroups": SECURITY_GROUPS,
+                "assignPublicIp": "ENABLED",
+            }
+        },
+    )
+    # 起動されたタスクの ARN を取得
+    task_arn = response["tasks"][0]["taskArn"]
+    
+    return jsonify({"taskArn": task_arn}) 
 
+@bp.route("/get_scraping_status/<path:task_arn>", methods=["GET"])
+def check_task_status(task_arn):
+    # タスクの状態を取得
+    response = ecs_client.describe_tasks(
+        cluster=CLUSTER_NAME,
+        tasks=[task_arn]
+    )
 
+    # タスクの状態を確認
+    tasks = response.get("tasks", [])
+    if not tasks:
+        return {"error": "Task not found"}, 404
+    task = tasks[0]
+    status = task.get("lastStatus", "UNKNOWN")# タスクの状態 (PROVISIONING, PENDING, RUNNING, STOPPED)
+    
+    # タスクが STOPPED の場合、追加情報を取得
+    result = {
+        "status": status,
+        "stoppedAt": task.get("stoppedAt"),
+        "stopReason": task.get("stoppedReason", "No reason provided"),
+        "exitCode": task.get("containers", [{}])[0].get("exitCode", "Unknown"),
+        "taskArn": task_arn,
+    } if status == "STOPPED" else {
+        "status": status,
+        "stoppedAt": None,
+        "stopReason": None,
+        "exitCode": None,
+        "taskArn": task_arn,
+    }
+    
+    return jsonify(result)
+       
 @bp.route("/notification_test", methods=["GET"])
 def notification_test() -> Response:
     """すべての価格を0円に変更後、最新価格を取得"""
@@ -147,31 +200,15 @@ def notification_test() -> Response:
         db.session.rollback()  # 失敗時にロールバック
         return jsonify({"result": 0, "error": str(e)})
 
-@task
-def run_spider_task():
-    """非同期でスクレイピングを実行する"""
-    api_url = "http://fargate-demo-alb-1377125418.ap-northeast-1.elb.amazonaws.com/run_spider"
-    # api_url = "http://scrapers:5000//run_spider"
-    try:
-        response = requests.get(api_url, timeout=300)
-        response.raise_for_status()  # エラー時に例外を発生させる
-
-        data = response.json()
-        task_results["latest"] = {"status": "updated", "output": data, "error": None}
-
-    except requests.exceptions.RequestException as e:
-        task_results["latest"] = {"status": "error", "output": None, "error": f"APIリクエスト失敗: {str(e)}"}
-
-    except requests.exceptions.Timeout:
-        task_results["latest"] = {"status": "error", "output": None, "error": "タイムアウトエラー"}
-    
-    # return jsonify(result)
-
-# ✅ 最新のスクレイピング結果を取得するエンドポイント
-@bp.route("/get_scraping_status", methods=["GET"])
-def get_scraping_status():
-    """メモリ内の最新スクレイピング結果を取得"""
-    return jsonify(task_results.get("latest", {"status": "pending"}))
-
-# ✅ 結果を保持するグローバル変数（DBを使わない場合）
-task_results = {}
+def get_latest_task_definition(task_family):
+    """タスク定義の最新リビジョンを取得"""
+    response = ecs_client.list_task_definitions(
+        familyPrefix=task_family,
+        sort="DESC",
+        status="ACTIVE",
+        maxResults=1
+    )
+    if response["taskDefinitionArns"]:
+        return response["taskDefinitionArns"][0]  # 最新のリビジョン ARN を取得
+    else:
+        raise ValueError("No active task definition found.")
