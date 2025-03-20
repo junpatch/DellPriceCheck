@@ -107,6 +107,28 @@ jobs:
             --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.AWS_SUBNET_ID }}],securityGroups=[${{ secrets.AWS_SECURITY_GROUP_ID }}],assignPublicIp=ENABLED}" \
             --capacity-provider-strategy "[{\"capacityProvider\": \"FARGATE_SPOT\", \"weight\": 1}]"
 
+  flask-test-build-image:
+    name: Flask Container - Test and Build
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: api
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build an Image and Run Tests
+        run: |
+          docker build -it -t temp_scrapers:latest .
+
+      - name: Zappa Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          zappa deploy
+
   deploy_flask:
     name: Deploy Flask on Lambda by Zappa
     runs-on: ubuntu-20.04 

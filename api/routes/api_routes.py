@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime
-import requests
 
 import boto3
 from flask import Blueprint, jsonify, request, render_template, Response
-from zappa.asynchronous import task
 
 from model.models import Products, PriceHistory, db
 
@@ -48,6 +46,20 @@ def fetch_model_by_name(name: str, ) -> str | None:
     """商品の name と model を用いて model を取得"""
     models = db.session.query(Products.model).filter_by(name=name).all()
     return models if models else None
+
+
+def get_latest_task_definition(task_family):
+    """タスク定義の最新リビジョンを取得"""
+    response = ecs_client.list_task_definitions(
+        familyPrefix=task_family,
+        sort="DESC",
+        status="ACTIVE",
+        maxResults=1
+    )
+    if response["taskDefinitionArns"]:
+        return response["taskDefinitionArns"][0]  # 最新のリビジョン ARN を取得
+    else:
+        raise ValueError("No active task definition found.")
 
 
 # ルート定義
@@ -129,7 +141,6 @@ def get_subcategories(name) -> Response:
 @bp.route("/check_price", methods=["GET"])
 def price_check() -> Response:
     """現在の価格を取得"""
-    
     response = ecs_client.run_task(
         cluster=CLUSTER_NAME,
         taskDefinition=get_latest_task_definition(TASK_FAMILY),
@@ -199,16 +210,3 @@ def notification_test() -> Response:
     except Exception as e:
         db.session.rollback()  # 失敗時にロールバック
         return jsonify({"result": 0, "error": str(e)})
-
-def get_latest_task_definition(task_family):
-    """タスク定義の最新リビジョンを取得"""
-    response = ecs_client.list_task_definitions(
-        familyPrefix=task_family,
-        sort="DESC",
-        status="ACTIVE",
-        maxResults=1
-    )
-    if response["taskDefinitionArns"]:
-        return response["taskDefinitionArns"][0]  # 最新のリビジョン ARN を取得
-    else:
-        raise ValueError("No active task definition found.")
