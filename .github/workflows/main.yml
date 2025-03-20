@@ -52,8 +52,8 @@ jobs:
           docker image tag temp_scrapers:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-  deploy_flask:
-    name: Deploy
+  deploy_scrapy:
+    name: Deploy Scrapy on ECS Task
     runs-on: ubuntu-20.04 
     needs: [web-test-build-image]
 
@@ -107,10 +107,13 @@ jobs:
             --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.AWS_SUBNET_ID }}],securityGroups=[${{ secrets.AWS_SECURITY_GROUP_ID }}],assignPublicIp=ENABLED}" \
             --capacity-provider-strategy "[{\"capacityProvider\": \"FARGATE_SPOT\", \"weight\": 1}]"
 
-  deploy_scrapy:
-    name: Deploy
+  deploy_flask:
+    name: Deploy Flask on Lambda by Zappa
     runs-on: ubuntu-20.04 
     needs: [web-test-build-image]
+    defaults:
+      run:
+        working-directory: api
 
     steps:
       - uses: actions/checkout@v2
