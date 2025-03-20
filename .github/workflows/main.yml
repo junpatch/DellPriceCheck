@@ -122,16 +122,24 @@ jobs:
         run: |
           docker image build -t temp_scrapers:latest .
 
-      - name: Create a Container with "-it"
+      - name: Create a Container and Keep Running
         run: |
-          docker container run -it temp_scrapers:latest .
+          docker run -d --name temp_scrapers_container temp_scrapers:latest tail -f /dev/null
 
-      - name: Zappa Deploy
+      - name: Deploy with Zappa
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "ap-northeast-1"
         run: |
-          zappa deploy
+          docker exec temp_scrapers_container bash -c "
+            zappa deploy
+          "
+      - name: Stop and Remove Container
+        if: always()
+        run: |
+          docker stop temp_scrapers_container
+          docker rm temp_scrapers_container
 
   # deploy_flask:
   #   name: Deploy Flask on Lambda by Zappa
