@@ -10,11 +10,6 @@ ENV PLAYWRIGHT_BROWSERS_PATH="/playwright"
 # 作業ディレクトリを設定
 WORKDIR ${WORK_DIR}
 
-# # AWS Lambdaランタイムインターフェースエミュレータのinstall
-ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie /usr/bin/aws-lambda-rie
-COPY entry.sh ${WORK_DIR}/entry.sh
-RUN chmod 755 /usr/bin/aws-lambda-rie ${WORK_DIR}/entry.sh
-
 # 必要なパッケージをインストールして、python仮想環境をセットアップ
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -44,11 +39,6 @@ WORKDIR ${WORK_DIR}
 
 # 環境変数を設定（Playwright が Chromium を認識できるように）
 ENV PLAYWRIGHT_BROWSERS_PATH="/playwright"
-
-# AWS Lambdaランタイムインターフェースエミュレータのinstall
-ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie /usr/bin/aws-lambda-rie
-COPY entry.sh ${WORK_DIR}/entry.sh
-RUN chmod 755 /usr/bin/aws-lambda-rie ${WORK_DIR}/entry.sh
 
 RUN apt-get update && apt-get install -y \
     gcc \

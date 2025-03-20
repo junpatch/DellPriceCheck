@@ -34,7 +34,11 @@ jobs:
       
       - name: Build and Test Docker Image
         run: |
-          docker buildx build --platform linux/amd64 --provenance=false -t temp_scraper:latest .
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            --build-arg LINE_ACCESS_TOKEN=${{ env.LINE_ACCESS_TOKEN }} \
+            -t temp_scraper:latest .
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -121,10 +125,6 @@ jobs:
           docker run -d --name temp_api_container temp_api:latest tail -f /dev/null
       
       - name: Deploy API with Zappa
-        # env:
-        #   AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
-        #   AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
-        #   AWS_REGION: ${{ env.AWS_REGION }}
         run: |
           docker exec temp_api_container bash -c "
             source /workspace/.venv/bin/activate &&
@@ -139,3 +139,4 @@ jobs:
         run: |
           docker stop temp_api_container
           docker rm temp_api_container
+          docker image rm temp_scraper
