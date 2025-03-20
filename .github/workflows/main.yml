@@ -1,4 +1,4 @@
-name: Deploy Simple CI/CD 
+name: Deploy Scraping & API Services
 
 on:
   push:
@@ -7,17 +7,16 @@ on:
 
 env:
   AWS_REGION: ap-northeast-1
-  ECS_SERVICE: fargate-demo-app-servicec_spot
-  ECS_CLUSTER: fargate-demo-cluster
-  ECS_TASK_DEFINITION: .aws/task-definition.json
+  # ECS_SERVICE: scraping-ecs-service-spot
+  ECS_CLUSTER: scraping-ecs-cluster
+  ECS_TASK_DEFINITION_PATH: .aws/task-definition.json
 
 permissions:
   contents: read
 
-
 jobs:
-  web-test-build-image:
-    name: Web Container - Test and Build
+  scraper-build-test-push:
+    name: Scraper Container - Test & Push
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     defaults:
@@ -26,79 +25,67 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
-
-      - name: Build an Image and Run Tests
+      
+      - name: Build and Test Docker Image
         run: |
-          docker buildx build --platform linux/amd64 --provenance=false -t temp_scrapers:latest .
-
-      - name: Configure AWS credentials
+          docker buildx build --platform linux/amd64 --provenance=false -t temp_scraper:latest .
+      
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
+      
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: true
-
-      - name: Push the image to Amazon ECR
+      
+      - name: Push Image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.AWS_ECR_WEB_SERVER_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_SCRAPER_REPOSITORY }}
         run: |
-          docker image tag temp_scrapers:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker image tag temp_scraper:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-  deploy_scrapy:
-    name: Deploy Scrapy on ECS Task
-    runs-on: ubuntu-20.04 
-    needs: [web-test-build-image]
-
+  deploy-scraper-task:
+    name: Deploy Scraper on ECS Task
+    runs-on: ubuntu-20.04
+    needs: [scraper-build-test-push]
+    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
+      - uses: actions/checkout@v3
+      
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
+      
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: true
-
-      - name: Fill in the new image ID in the Amazon ECS task definition for web
-        id: render-web-task-def
+      
+      - name: Update ECS Task Definition
+        id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: fagate-demo-container
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.AWS_ECR_WEB_SERVER_REPOSITORY }}
-
-      # サービスを立ち上げる
-      # - name: Deploy Amazon ECS task definition
-      #   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.render-web-task-def.outputs.task-definition }}
-      #     service: ${{ env.ECS_SERVICE }}
-      #     cluster: ${{ env.ECS_CLUSTER }}
-      #     wait-for-service-stability: true
-
-
-      # タスクを実行する
+          task-definition: ${{ env.ECS_TASK_DEFINITION_PATH }}
+          container-name: scraper-container
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.AWS_ECR_SCRAPER_REPOSITORY }}
+      
       - name: Register New Task Definition
         id: register-task-def
         run: |
-          TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://${{ steps.render-web-task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)
+          TASK_DEF_ARN=$(aws ecs register-task-definition --cli-input-json file://${{ steps.render-task-def.outputs.task-definition }} --query 'taskDefinition.taskDefinitionArn' --output text)
           echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-
+      
       - name: Run ECS Task
         run: |
           aws ecs run-task \
@@ -107,8 +94,8 @@ jobs:
             --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.AWS_SUBNET_ID }}],securityGroups=[${{ secrets.AWS_SECURITY_GROUP_ID }}],assignPublicIp=ENABLED}" \
             --capacity-provider-strategy "[{\"capacityProvider\": \"FARGATE_SPOT\", \"weight\": 1}]"
 
-  flask-test-build-image:
-    name: Flask Container - Test and Build
+  api-build-test-deploy:
+    name: API Container - Test & Deploy
     runs-on: ubuntu-20.04
     timeout-minutes: 10
     defaults:
@@ -117,59 +104,31 @@ jobs:
     
     steps:
       - uses: actions/checkout@v3
-
-      - name: Build an Image
+      
+      - name: Build Docker Image
         run: |
-          docker image build -t temp_scrapers:latest .
-
-      - name: Create a Container and Keep Running
+          docker image build -t temp_api:latest .
+      
+      - name: Start Temporary Container
         run: |
-          docker run -d --name temp_scrapers_container temp_scrapers:latest tail -f /dev/null
-
-      - name: Deploy with Zappa
+          docker run -d --name temp_api_container temp_api:latest tail -f /dev/null
+      
+      - name: Deploy API with Zappa
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "ap-northeast-1"
         run: |
-          docker exec temp_scrapers_container bash -c "
+          docker exec temp_api_container bash -c "
             source /workspace/.venv/bin/activate &&
             aws configure set aws_access_key_id \"$AWS_ACCESS_KEY_ID\" &&
             aws configure set aws_secret_access_key \"$AWS_SECRET_ACCESS_KEY\" &&
             aws configure set region \"$AWS_REGION\" &&
             zappa update
           "
-
-      - name: Stop and Remove Container
+      
+      - name: Cleanup Temporary Container
         if: always()
         run: |
-          docker stop temp_scrapers_container
-          docker rm temp_scrapers_container
-
-  # deploy_flask:
-  #   name: Deploy Flask on Lambda by Zappa
-  #   runs-on: ubuntu-20.04 
-  #   needs: [web-test-build-image]
-  #   defaults:
-  #     run:
-  #       working-directory: api
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  
-  #     - name: Set up Python 3.11
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: 3.11
-  
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install zappa flask       
-  
-  #     - name: Zappa Deploy
-  #       env:
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #       run: |
-  #         zappa deploy
+          docker stop temp_api_container
+          docker rm temp_api_container
