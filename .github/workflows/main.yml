@@ -107,7 +107,7 @@ jobs:
             --cluster ${{ env.ECS_CLUSTER }} \
             --task-definition $TASK_DEF_ARN \
             --network-configuration "awsvpcConfiguration={subnets=[${{ env.AWS_SUBNET_ID }}],securityGroups=[${{ env.AWS_SECURITY_GROUP_ID }}],assignPublicIp=ENABLED}" \
-            --capacity-provider-strategy "[{\"capacityProvider\": \"FARGATE_SPOT\", \"weight\": 1}]"
+            --capacity-provider-strategy "[{\"capacityProvider\": \"FARGATE_SPOT\", \"weight\": 1}]" \
             --started-by "Github Actions"
 
   api-build-test-deploy:
