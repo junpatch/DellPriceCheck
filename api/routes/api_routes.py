@@ -154,6 +154,7 @@ def price_check() -> Response:
                 "assignPublicIp": "ENABLED",
             }
         },
+        startedBy="Flask-API-trigger"
     )
     # 起動されたタスクの ARN を取得
     task_arn = response["tasks"][0]["taskArn"]
