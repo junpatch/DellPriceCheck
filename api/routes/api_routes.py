@@ -15,10 +15,10 @@ ecs_client = boto3.client("ecs", region_name="ap-northeast-1")
 # 定数定義
 NOTIFICATION_UPDATED_MSG = "通知設定を更新しました order_code: {}"
 PRODUCT_NOT_FOUND_MSG = "商品が見つかりません order_code: {}"
-CLUSTER_NAME = "scraper-ecs-task"
-TASK_FAMILY = "fargate-demo-task-definition_git"
-SUBNETS = ["subnet-01a0452bbbf32a610", "subnet-0c14d6ba93b4e674e", "subnet-0a8dcb2ef9ee576bc"]
-SECURITY_GROUPS =["sg-0f17238bbb956958a"]
+CLUSTER_NAME = "scraping-ecs-cluster"
+TASK_FAMILY = "scraper-ecs-task"
+SUBNETS = ["subnet-0aeb6f09a8223f928", "subnet-08ababb4f6a70f6c1"]
+SECURITY_GROUPS =["sg-049f994ecd0660ac2"]
 
 # ヘルパー関数
 def fetch_product_by_order_code(order_code: str) -> Products | None:
