@@ -1,13 +1,26 @@
 # Dell 製品価格スクレイピングシステム
 
 ## 目次
+- [構築したWEBアプリ](#構築したWEBアプリ)
 - [概要](#概要)
 - [主な機能](#主な機能)
-- [システム構成と使用技術](#システム構成と使用技術)
+- [システム構成とモジュール構成](#システム構成とモジュール構成)
+- [使用技術](#使用技術)
+- [処理フロー](#処理フロー)
 - [ローカル開発環境の構築](#ローカル開発環境の構築)
 - [AWS環境構築](#aws環境構築)
-- [デプロイ手順](#デプロイ手順)
+- [デプロイ手順 (AWS)](#デプロイ手順-aws)
 - [ライセンス](#ライセンス)
+
+## 構築したWEBアプリ
+本システムでは、Dell製品の価格変動を確認したり、スクレイピングの実行状況を管理するためのWebインターフェースを提供しています。
+
+### アクセス方法
+- **本番環境**: [Dell価格チェッカー](https://u49w2optbh.execute-api.ap-northeast-1.amazonaws.com/dev)
+- **開発環境**: http://localhost:5000 (ローカル開発環境構築後)
+
+### スクリーンショット
+![ダッシュボード画面](./docs/images/dashboard.png)
 
 ## 概要
 本システムは、Dell 製品の価格を定期的にスクレイピングし、価格変動を検知すると LINE に通知を送る AWS ベースのスクレイピングシステムです。
@@ -35,9 +48,10 @@
 ## システム構成とモジュール構成
 
 ### システム構成図
-![システム構成図](./docs/images/system_architecture.png)
+![システム構成図](./docs/images/system_architecture.jpg)
 
 ### モジュール構成
+```
 DELL_PRICE_CHECK
 ├── api
 │   ├── model
@@ -54,7 +68,7 @@ DELL_PRICE_CHECK
     ├── notification
     ├── app.py
     └── scrapy.cfg
-
+```
 #### 主要ディレクトリの説明
 
 - **api**: WebアプリケーションとバックエンドAPIを管理
@@ -132,13 +146,13 @@ POSTGRE_DB_NAME=xxxxx
 ```sh
 docker-compose up --build -d
 ```
-### 4. Scrapy の動作確認
-Scrapy コンテナに入り、スクレイピングを実行。
-
+### 4. Flask サーバーの起動
+Flaskのコンテナに入り、Flaskを実行します。
 ```sh
-docker exec -it scrapers_container bash
-scrapy crawl laptop
+docker exec -it flask_container bash
+flask run --host=0.0.0.0
 ```
+
 ### 5. Web サイトの起動確認
 ブラウザで http://localhost:5000 にアクセスし、以下の機能を確認してください。
 
