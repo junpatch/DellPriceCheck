@@ -85,8 +85,12 @@ DELL_PRICE_CHECK
 
 ## 使用技術
 
-### プログラム
-- **Python 3.11**: システム全体の実装  
+### フロントエンド
+- **HTML, CSS, JavaScript**: Webページの構成とデザイン
+- **Chart.js**: 価格推移グラフの描画
+
+### バックエンド
+- **Python 3.11**: システム全体の実装
 - **Scrapy + Playwright**: JavaScript をレンダリングしながら価格情報を取得  
 - **Flask**: 外部 API を提供し、スクレイピングをトリガー 
 - **LINE Messaging API**: 価格変動時の通知  
@@ -217,8 +221,8 @@ import datetime
 
 CLUSTER_NAME = "scraping-ecs-cluster"
 TASK_FAMILY = "scraper-ecs-task"
-SUBNETS = ["subnet-0aeb6f09a8223f928", "subnet-08ababb4f6a70f6c1"]
-SECURITY_GROUPS =["sg-049f994ecd0660ac2"]
+SUBNETS = ["subnet-xxxxxxxx"]
+SECURITY_GROUPS =["sg-xxxxxxxx"]
 
 ecs_client = boto3.client("ecs", region_name="ap-northeast-1") 
 
